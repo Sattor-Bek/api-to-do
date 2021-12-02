@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, time
 from enum import Enum
-from db import Base
+from database import Base
 
 class Priority(Enum):
     A = 1
@@ -39,7 +39,10 @@ class Task(Base):
     assigned_user = relationship("User", back_populates="tasks")
     items = relationship("Item", back_populates="task_title")
     deadline = Column('deadline', datetime, default=None, nullable=False)
-    date = Column('date', datetime, default=datetime.now(), nullable=False, server_default=datetime.current_timestamp())
+    created = Column('created', datetime, default=datetime.now(), nullable=False, server_default=datetime.current_timestamp())
+    estimated_time = Column('estimated_time', time, default=time.now(), nullable=True)
+    spent_time = Column('spent_time', time, default=time.now(), nullable=True)
+
     done = Column('done', Boolean, default=False, nullable=False)
  
 
