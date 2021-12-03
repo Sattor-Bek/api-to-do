@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from datetime import datetime, time
 from sql_app.models import Priority
 
-
 class ItemBase(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -15,11 +14,11 @@ class Item(BaseModel):
 class TaskBase(BaseModel):
     title: str
     priority: Priority
-    items: Optional[List[Item]] = None
+    items: Optional[List[Item]] = []
     deadline: datetime
     created: datetime
-    estimated_time: Optional[time]
-    spent_time: Optional[time]
+    estimated_time: Optional[time] = None
+    spent_time: Optional[time] = None
     class Config:
         orm_mode = True
 class Task(TaskBase):
@@ -36,7 +35,8 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    items: List[Task] = []
+    tasks: List[Task] = []
 
     class Config:
         orm_mode = True
+

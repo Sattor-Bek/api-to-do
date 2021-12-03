@@ -24,7 +24,6 @@ class User(Base):
     name = Column('name', String)
     email = Column('email', String, unique=True, index=True)
     password = Column('hashed_password', String)
-    is_active = Column('is_active', Boolean, default=True)
     is_admin = Column('is_admin', Boolean, default=False)
 
     tasks = relationship("Task", back_populates="assigned_user")
