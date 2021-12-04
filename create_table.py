@@ -17,7 +17,7 @@ if __name__ == "__main__":
         content='deadline',
         priority=Priority.a.value,
         category=Category.daily.value,
-        deadline=datetime(2019, 12, 25, 12, 00, 00),
+        deadline=datetime(2021, 12, 25, 12, 00, 00),
     )
     print(task)
     database.session.add(task)

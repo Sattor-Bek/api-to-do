@@ -16,7 +16,7 @@ pattern = re.compile(r'\w{2,100}')
 pattern_password = re.compile(r'\w{2,100}') 
 pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$') 
 
-import calendar
+from calendar_module import CalendarModule
 from datetime import datetime, timedelta
 
 app = FastAPI(
@@ -52,10 +52,8 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
     tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
     database.session.close()
 
-    cal = calendar.LocaleHTMLCalendar.formatyear(
-        calendar.LocaleHTMLCalendar(locale='en'), 
-        today.year
-        )
+    cal = CalendarModule(username, {task.deadline.strftime('%Y%m%d'): task.done for task in tasks})
+    cal = cal.formatyear(today.year)
 
     links = [task.deadline.strftime('/todo/'+username+'/%Y/%m/%d') for task in tasks] 
     return templates.TemplateResponse('admin.html',
@@ -105,3 +103,22 @@ async def register(request: Request):
         return templates.TemplateResponse('complete.html',
                                           {'request': request,
                                            'username': username})
+
+def detail(request: Request, username, year, month, day):
+    if request.method == 'GET':
+        user = database.session.query(User).filter(User.username == username).first()
+        all_tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
+        tasks = list(filter(lambda task: todays_tasks, all_tasks))
+        database.session.close()
+
+        return templates.TemplateResponse('detail.html',
+                                        {'request': request,
+                                        'username': username,
+                                        'year': year,
+                                        'month': month,
+                                        'day': day,
+                                        'tasks': tasks})
+
+def todays_tasks(task: Task):
+    today = datetime.today().strftime('%Y%M%D')
+    return task.deadline.strftime('%Y%M%D') == today

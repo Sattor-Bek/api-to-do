@@ -1,4 +1,4 @@
-from urls import app
+from router import app
 import uvicorn
 
 if __name__ == '__main__':
