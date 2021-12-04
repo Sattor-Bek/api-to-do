@@ -2,9 +2,14 @@
 {% block content %}
 <br>
 <h2>Administrator page</h2>
+<div class="row">
+    <div class="col-md-3">
+        <a href="/register" class="btn btn-primary">Register</a>
+    </div>
+</div>
 <hr>
 <p>Hi, {{ user['username'] }}.</p>
- 
+
 <br>
 <table class="table">
     <thead class="table-dark">
@@ -18,14 +23,14 @@
     </tr>
     </thead>
     <tbody>
-    {% for t in task %}
+    {% for task in tasks %}
     <tr>
-        <td>{{ t['id'] }}</td>
-        <td>{{ t['priority'] }}</td>
-        <td>{{ t['content'] }}</td>
-        <td>{{ t['deadline'] }}</td>
-        <td>{{ t['created_at'] }}</td>
-        <td>{% if t['done'] %}
+        <td>{{ task['id'] }}</td>
+        <td>{{ task['priority'] }}</td>
+        <td>{{ task['content'] }}</td>
+        <td>{{ task['deadline'] }}</td>
+        <td>{{ task['created_at'] }}</td>
+        <td>{% if task['done'] %}
             <div class="text-success">Y</div>
             {% else %}
             <div class="text-danger">N</div>
@@ -35,5 +40,12 @@
     {% endfor %}
     </tbody>
 </table>
+<br><br>
+<h3> Calendar </h3>
+<p>↓　Click here to customize plans</p>
+{% autoescape false%}
+{{ calender }}
+{% endautoescape%}
+<br>
  
 {% endblock %}

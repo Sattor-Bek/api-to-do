@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+<br>
+<div class="row">
+    <div class="col-md-10">
+        <h1>Plan(s) of {{ year }}, {{ month }}, {{ day }}</h1>
+    </div>
+    <div class="col-md-2">
+        <a href="/admin" class="btn btn-primary">Back</a>
+    </div>
+    <div class="col-md-12">
+        <table class="table">
+            <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Priority</th>
+                <th>Title</th>        
+                <th>Deadline</th>
+                <th>Created</th>
+                <th>Done</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task['id'] }}</td>
+                <td>{{ task['priority'] }}</td>
+                <td>{{ task['content'] }}</td>
+                <td>{{ task['deadline'] }}</td>
+                <td>{{ task['created_at'] }}</td>
+                <td>{% if task['done'] %}
+                    <div class="text-success">Y</div>
+                    {% else %}
+                    <div class="text-danger">N</div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<hr>
+<p>Hi {{ username }}, finish registering and flagging!</p>
+ 
+ 
+{% endblock %}
