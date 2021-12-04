@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<br>
+<h2>Administrator page</h2>
+<hr>
+<p>Hi, {{ user['username'] }}.</p>
+ 
+<br>
+<table class="table">
+    <thead class="table-dark">
+    <tr>
+        <th>#</th>
+        <th>Priority</th>
+        <th>Title</th>        
+        <th>Deadline</th>
+        <th>Created</th>
+        <th>Done</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for t in task %}
+    <tr>
+        <td>{{ t['id'] }}</td>
+        <td>{{ t['priority'] }}</td>
+        <td>{{ t['content'] }}</td>
+        <td>{{ t['deadline'] }}</td>
+        <td>{{ t['created_at'] }}</td>
+        <td>{% if t['done'] %}
+            <div class="text-success">Y</div>
+            {% else %}
+            <div class="text-danger">N</div>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+ 
+{% endblock %}
