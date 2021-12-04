@@ -1,3 +1,4 @@
+from calendar import calendar
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials 
  
@@ -15,6 +16,8 @@ pattern = re.compile(r'\w{2,100}')
 pattern_password = re.compile(r'\w{2,100}') 
 pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$') 
 
+import calendar
+from datetime import datetime, timedelta
 
 app = FastAPI(
     title='To Do App Using Fast API',
@@ -33,11 +36,11 @@ def index(request: Request):
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username
     password = hashlib.md5(credentials.password.encode()).hexdigest()
-
+    today = datetime.now()
+    next_w = today + timedelta(days=7)
     user = database.session.query(User).filter(User.username == username).first()
-    task = database.session.query(Task).filter(Task.user_id == user.id).all() if user is not None else []
     database.session.close()
-
+ 
     if user is None or user.password != password:
         error = 'Wrong password or wrong user name'
         raise HTTPException(
@@ -45,12 +48,22 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
             detail=error,
             headers={"WWW-Authenticate": "Basic"},
         )
+ 
+    tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
+    database.session.close()
 
-    
+    cal = calendar.LocaleHTMLCalendar.formatyear(
+        calendar.LocaleHTMLCalendar(locale='en'), 
+        today.year
+        )
+
+    links = [task.deadline.strftime('/todo/'+username+'/%Y/%m/%d') for task in tasks] 
     return templates.TemplateResponse('admin.html',
                                       {'request': request,
                                        'user': user,
-                                       'task': task})
+                                       'tasks': tasks,
+                                       'links': links,
+                                       'calender': cal})
 
 async def register(request: Request):
     if request.method == 'GET':
