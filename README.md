@@ -8,9 +8,13 @@
 
 `$ pip install passlib[bcrypt]`
 
+`$ pip install jinja2`
+
 `$ pip install --user uvicorn`
 
 `$ pip install sqlalchemy`
+
+`$ pip install requests`
 
 `$ uvicorn main:app --reload`
 
