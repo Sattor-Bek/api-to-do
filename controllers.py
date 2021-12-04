@@ -66,7 +66,7 @@ async def register(request: Request):
         password_tmp = data.get('password_tmp')
         mail = data.get('mail')
         error = []
-        tmp_user = db.session.query(User).filter(User.username == username).first()
+        tmp_user = database.session.query(User).filter(User.username == username).first()
  
         if tmp_user is not None:
             error.append('The same user name exsits')
