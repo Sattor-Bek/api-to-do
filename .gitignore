@@ -1,2 +1,5 @@
 env
 .vscode
+*sql_app*
+*pycache*
+*http
