@@ -1,15 +1,14 @@
 from calendar import calendar
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials 
  
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED 
- 
+from starlette.responses import RedirectResponse
+
 import database
 from models import User, Task
- 
-import hashlib
+from auth import *
 
 import re
 pattern = re.compile(r'\w{2,100}') 
@@ -34,20 +33,13 @@ def index(request: Request):
         })
 
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
-    username = credentials.username
-    password = hashlib.md5(credentials.password.encode()).hexdigest()
+    username = auth(credentials)
+    user = database.session.query(User).filter(User.username == username).first()
+
     today = datetime.now()
     next_w = today + timedelta(days=7)
-    user = database.session.query(User).filter(User.username == username).first()
+
     database.session.close()
- 
-    if user is None or user.password != password:
-        error = 'Wrong password or wrong user name'
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail=error,
-            headers={"WWW-Authenticate": "Basic"},
-        )
  
     tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
     database.session.close()
@@ -104,7 +96,11 @@ async def register(request: Request):
                                           {'request': request,
                                            'username': username})
 
-def detail(request: Request, username, year, month, day):
+def detail(request: Request, username, year, month, day, credentials: RedirectResponse = Depends(security)):
+    username_temp = auth(credentials)
+    if username_temp != username:
+        return RedirectResponse('/')
+
     if request.method == 'GET':
         user = database.session.query(User).filter(User.username == username).first()
         all_tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
@@ -119,6 +115,20 @@ def detail(request: Request, username, year, month, day):
                                         'day': day,
                                         'tasks': tasks})
 
-def todays_tasks(task: Task):
+def todays_tasks(tasks: Task):
     today = datetime.today().strftime('%Y%M%D')
-    return task.deadline.strftime('%Y%M%D') == today
+    return tasks.deadline.strftime('%Y%M%D') == today
+
+async def done(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    username = auth(credentials)
+    user = database.session.query(User).filter(User.username == username).first()
+    if request.method == 'POST':
+        
+        print("thingaaaaa")
+        task = database.session.query(Task).filter(Task.id == id).first()
+        task.done = True
+        url = task.deadline.strftime('/todo/'+username+'/%Y/%m/%d')
+        
+        database.session.commit()
+        database.session.close()
+        return RedirectResponse(url) 

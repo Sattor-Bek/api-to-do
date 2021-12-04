@@ -8,40 +8,51 @@
     <div class="col-md-2">
         <a href="/admin" class="btn btn-primary">Back</a>
     </div>
-    <div class="col-md-12">
-        <table class="table">
-            <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Priority</th>
-                <th>Title</th>        
-                <th>Deadline</th>
-                <th>Created</th>
-                <th>Done</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for task in tasks %}
+</div>
+<hr>
+<p>Hi {{ username }}, finish registering and flagging!</p>
+<div class="col-md-12">
+    <table class="table">
+        <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Priority</th>
+            <th>Title</th>        
+            <th>Deadline</th>
+            <th>Created</th>
+            <th>Done</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in tasks %}
+        <form action="/done/?id={{task.id}}" method="POST">
             <tr>
                 <td>{{ task['id'] }}</td>
                 <td>{{ task['priority'] }}</td>
                 <td>{{ task['content'] }}</td>
                 <td>{{ task['deadline'] }}</td>
                 <td>{{ task['created_at'] }}</td>
-                <td>{% if task['done'] %}
-                    <div class="text-success">Y</div>
-                    {% else %}
-                    <div class="text-danger">N</div>
-                    {% endif %}
+                {% if task['done'] %}
+                <td>
+                    <div class="text-success">Done</div>
                 </td>
+                <td>
+                    <button class="btn btn-primary" disabled="disabled">Done</button>
+                </td>
+                {% else %}
+                <td>                    
+                    <div class="text-danger">Doing</div>
+                </td>
+                <td>                    
+                    <button class="btn btn-primary" type="submit">Finish</button>
+                </td>
+                {% endif %}                
             </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        </form>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
 </div>
-<hr>
-<p>Hi {{ username }}, finish registering and flagging!</p>
- 
- 
 {% endblock %}
