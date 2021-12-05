@@ -1,4 +1,5 @@
 from calendar import calendar
+from typing import Optional
 from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials 
  
@@ -101,7 +102,7 @@ def detail(request: Request, username, year, month, day, credentials: RedirectRe
     if username_temp != username:
         return RedirectResponse('/')
 
-    if request.method == 'GET':
+    if request.method == 'GET' or request.method == 'POST':
         user = database.session.query(User).filter(User.username == username).first()
         all_tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
         tasks = list(filter(lambda task: todays_tasks, all_tasks))
@@ -119,16 +120,17 @@ def todays_tasks(tasks: Task):
     today = datetime.today().strftime('%Y%M%D')
     return tasks.deadline.strftime('%Y%M%D') == today
 
+@app.post("/done/")
 async def done(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     username = auth(credentials)
-    user = database.session.query(User).filter(User.username == username).first()
-    if request.method == 'POST':
-        
-        print("thingaaaaa")
+    id = request.query_params['id']
+    if id:
         task = database.session.query(Task).filter(Task.id == id).first()
-        task.done = True
+        if task.done:
+            task.done = False
+        else:
+            task.done = True
         url = task.deadline.strftime('/todo/'+username+'/%Y/%m/%d')
-        
         database.session.commit()
         database.session.close()
-        return RedirectResponse(url) 
+    return RedirectResponse(url=url)
