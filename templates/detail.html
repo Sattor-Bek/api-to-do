@@ -26,7 +26,7 @@
         </thead>
         <tbody>
         {% for task in tasks %}
-        <form action="/done/?id={{task.id}}" method="POST">
+        <form action="/done" method="POST">
             <tr>
                 <td>{{ task['id'] }}</td>
                 <td>{{ task['priority'] }}</td>
@@ -38,14 +38,14 @@
                     <div class="text-success">Done</div>
                 </td>
                 <td>
-                    <button class="btn btn-primary">Redo</button>
+                    <button class="btn btn-primary" type="submit" name="task_id" value="{{task.id}}">Redo</button>
                 </td>
                 {% else %}
                 <td>                    
                     <div class="text-danger">Doing</div>
                 </td>
                 <td>                    
-                    <button class="btn btn-primary" type="submit">Finish</button>
+                    <button class="btn btn-primary" type="submit" name="task_id" value="{{task.id}}">Finish</button>
                 </td>
                 {% endif %}                
             </tr>
@@ -54,5 +54,42 @@
         </tbody>
     </table>
     <br>
+    <hr>
+    <br>
+    <h3>Add Tasks</h3>
+    <form action="/add" method="post">
+        <div class="row">
+            <h5>Title: </h5>
+            <p class="pl-3"><input type="text" size="50" maxlength="200" name="content"></p>
+        </div>
+        <div class="row">
+            <h5>Deadline: </h5>
+            <p class="pl-3"><input type="date" name="date" value="{{year}}-{{month}}-{{day}}"></p>
+            <p class="pl-3"><input type="time" name="time"></p>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            <h5>Priority: </h5>
+            <p class="pl-3">
+                <select name="priority">
+                    {% for priority in priorities %}
+                    <option value="{{priority}}">{{priority}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+        </div>
+        <div class="row">
+            <h5>Category: </h5>
+            <p class="pl-3">
+                <select name="category">
+                    {% for category in categories %}
+                    <option value="{{category}}">{{category}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+        </div>
+        <button type="submit" class="btn btn-primary">Add</button>
+    </form>
 </div>
 {% endblock %}

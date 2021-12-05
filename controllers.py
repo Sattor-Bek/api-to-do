@@ -1,4 +1,4 @@
-from calendar import calendar
+from calendar import Calendar, calendar
 from typing import Optional
 from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials 
@@ -8,7 +8,7 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 import database
-from models import User, Task
+from models import Category, Priority, User, Task
 from auth import *
 
 import re
@@ -101,29 +101,31 @@ def detail(request: Request, username, year, month, day, credentials: RedirectRe
     username_temp = auth(credentials)
     if username_temp != username:
         return RedirectResponse('/')
-
-    if request.method == 'GET' or request.method == 'POST':
-        user = database.session.query(User).filter(User.username == username).first()
-        all_tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
-        tasks = list(filter(lambda task: todays_tasks, all_tasks))
-        database.session.close()
-
-        return templates.TemplateResponse('detail.html',
-                                        {'request': request,
-                                        'username': username,
-                                        'year': year,
-                                        'month': month,
-                                        'day': day,
-                                        'tasks': tasks})
+    user = database.session.query(User).filter(User.username == username).first()
+    all_tasks = database.session.query(Task).filter(Task.user_id == user.id).all()
+    theday = '{}{}{}'.format(year,  month.zfill(2), day.zfill(2))
+    tasks = [task for task in all_tasks if task.deadline.strftime('%Y%m%d') == theday]
+    database.session.close()
+    priorities = priorities_list()
+    categories = categories_list()
+    return templates.TemplateResponse('detail.html',
+                                    {'request': request,
+                                    'username': username,
+                                    'year': year,
+                                    'month': month,
+                                    'day': day,
+                                    'tasks': tasks,
+                                    'priorities': priorities,
+                                    'categories': categories})
 
 def todays_tasks(tasks: Task):
     today = datetime.today().strftime('%Y%M%D')
     return tasks.deadline.strftime('%Y%M%D') == today
 
-@app.post("/done/")
 async def done(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     username = auth(credentials)
-    id = request.query_params['id']
+    form = await request.form()
+    id = int(form['task_id'])
     if id:
         task = database.session.query(Task).filter(Task.id == id).first()
         if task.done:
@@ -134,3 +136,34 @@ async def done(request: Request, credentials: HTTPBasicCredentials = Depends(sec
         database.session.commit()
         database.session.close()
     return RedirectResponse(url=url)
+
+async def add(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    username = auth(credentials)
+    user = database.session.query(User).filter(User.username == username).first()
+    form = await request.form()
+    date = form['date']
+    time = form['time']
+    dateTime = '{}-{}'.format(date, time)
+    deadline = datetime.strptime(dateTime, "%Y-%m-%d-%H:%M")
+    url = deadline.strftime('/todo/'+username+'/%Y/%m/%d')
+    priority = Priority(int(form['priority']))
+    category = Category(form['category'])
+    task = Task(
+        user_id=user.id, 
+        content=form['content'], 
+        deadline=deadline, 
+        priority=priority, 
+        category=category
+        )
+    database.session.add(task)
+    database.session.commit()
+    database.session.close()
+ 
+    return RedirectResponse(url=url)
+
+
+def priorities_list():
+    return list(map(int, Priority))
+
+def categories_list():
+    return list(map(lambda c: c.value, Category))
